@@ -6,6 +6,7 @@ from helpers import prepare_dataset_nli, prepare_train_dataset_qa, \
     prepare_validation_dataset_qa, QuestionAnsweringTrainer, compute_accuracy
 import os
 import json
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 
 NUM_PREPROCESSING_WORKERS = 2
 
@@ -144,7 +145,29 @@ def main():
         compute_metrics = lambda eval_preds: metric.compute(
             predictions=eval_preds.predictions, references=eval_preds.label_ids)
     elif args.task == 'nli':
-        compute_metrics = compute_accuracy
+
+      def compute_metrics(eval_preds):
+        logits, labels = eval_preds
+        preds = logits.argmax(axis=-1)
+
+        acc = accuracy_score(labels, preds)
+
+        precision_macro, recall_macro, f1_macro, _ = precision_recall_fscore_support(
+            labels, preds, average='macro', zero_division=0
+        )
+        precision_micro, recall_micro, f1_micro, _ = precision_recall_fscore_support(
+            labels, preds, average='micro', zero_division=0
+        )
+
+        return {
+            "accuracy": acc,
+            "precision_macro": precision_macro,
+            "recall_macro": recall_macro,
+            "f1_macro": f1_macro,
+            "precision_micro": precision_micro,
+            "recall_micro": recall_micro,
+            "f1_micro": f1_micro
+        }
     
 
     # This function wraps the compute_metrics function, storing the model's predictions
