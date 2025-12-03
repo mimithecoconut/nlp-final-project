@@ -102,8 +102,7 @@ def main():
     print("Preprocessing data... (this takes a little bit, should only happen once per dataset)")
     if dataset_id == ('snli',):
         # remove SNLI examples with no label
-        dataset = dataset.filter(lambda ex: ex['label'] != -1)
-    
+        dataset = dataset.filter(lambda ex: ex['label'] != -1)    
     train_dataset = None
     eval_dataset = None
     train_dataset_featurized = None
@@ -120,6 +119,7 @@ def main():
         )
     if training_args.do_eval:
         eval_dataset = dataset[eval_split]
+        print(eval_dataset)
         if args.max_eval_samples:
             eval_dataset = eval_dataset.select(range(args.max_eval_samples))
         eval_dataset_featurized = eval_dataset.map(
